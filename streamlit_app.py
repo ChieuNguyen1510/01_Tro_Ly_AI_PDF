@@ -24,12 +24,12 @@ def img_to_base64(img_path):
     with open(img_path, "rb") as f:
         return b64encode(f.read()).decode()
 
-# Đọc PDF
-def extract_text_from_pdf(uploaded_file):
+# Hàm đọc PDF từ thư mục cục bộ
+def extract_text_from_pdf_path(file_path):
     text = ""
-    doc = fitz.open(stream=uploaded_file.read(), filetype="pdf")
-    for page in doc:
-        text += page.get_text()
+    with fitz.open(file_path) as doc:
+        for page in doc:
+            text += page.get_text()
     return text
 
 # Icon
@@ -52,23 +52,18 @@ st.markdown(f"""<h1 style="text-align: center; font-size: 24px; border-bottom: 2
 openai_api_key = st.secrets.get("OPENAI_API_KEY")
 client = OpenAI(api_key=openai_api_key)
 
-# Tải lên PDF
-uploaded_pdf = st.file_uploader("📄 Tải lên tài liệu PDF", type="pdf")
+# Đọc nội dung PDF từ thư mục
+pdf_context = extract_text_from_pdf_path("Test1.pdf")  # Thay đường dẫn tùy bạn
 
-# Tin nhắn hệ thống
+# Tạo system message từ file txt + pdf
 base_system = rfile("01.system_trainning.txt")
-pdf_context = ""
-if uploaded_pdf:
-    pdf_context = extract_text_from_pdf(uploaded_pdf)
-    st.success("✅ Đã trích xuất nội dung từ PDF thành công!")
-
 INITIAL_SYSTEM_MESSAGE = {
     "role": "system",
-    "content": f"{base_system}\n\nTài liệu tham khảo từ PDF:\n{pdf_context[:8000]}"  # Giới hạn tránh token overflow
+    "content": f"{base_system}\n\nTài liệu tham khảo từ PDF:\n{pdf_context[:8000]}"
 }
 INITIAL_ASSISTANT_MESSAGE = {"role": "assistant", "content": rfile("02.assistant.txt")}
 
-# Khởi tạo messages
+# Khởi tạo session_state
 if "messages" not in st.session_state:
     st.session_state.messages = [INITIAL_SYSTEM_MESSAGE, INITIAL_ASSISTANT_MESSAGE]
 
