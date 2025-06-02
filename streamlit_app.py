@@ -53,7 +53,7 @@ openai_api_key = st.secrets.get("OPENAI_API_KEY")
 client = OpenAI(api_key=openai_api_key)
 
 # Đọc nội dung PDF từ thư mục
-pdf_context = extract_text_from_pdf_path("data/huongdan.pdf")
+pdf_context = extract_text_from_pdf_path("Test1.pdf")
 
 # Hiển thị nội dung từ PDF
 with st.expander("📘 Nội dung đang dùng từ PDF (ngữ cảnh cho AI)", expanded=False):
