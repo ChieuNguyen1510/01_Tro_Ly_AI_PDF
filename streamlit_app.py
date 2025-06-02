@@ -53,17 +53,13 @@ openai_api_key = st.secrets.get("OPENAI_API_KEY")
 client = OpenAI(api_key=openai_api_key)
 
 # Đọc nội dung PDF từ thư mục
-pdf_context = extract_text_from_pdf_path("Test1.pdf")
+pdf_context = extract_text_from_pdf_path("Test1.pdf")  # Thay đường dẫn tùy bạn
 
-# Hiển thị nội dung từ PDF
-with st.expander("📘 Nội dung đang dùng từ PDF (ngữ cảnh cho AI)", expanded=False):
-    st.write(pdf_context[:1000])  # Hiển thị 1000 ký tự đầu tiên
-
-# Hiển thị nội dung hệ thống gửi kèm PDF
+# Tạo system message từ file txt + pdf
 base_system = rfile("01.system_trainning.txt")
 INITIAL_SYSTEM_MESSAGE = {
     "role": "system",
-    "content": f"{base_system}\n\n[PDF CONTEXT START]\n{pdf_context[:8000]}\n[PDF CONTEXT END]"
+    "content": f"{base_system}\n\nTài liệu tham khảo từ PDF:\n{pdf_context[:8000]}"
 }
 INITIAL_ASSISTANT_MESSAGE = {"role": "assistant", "content": rfile("02.assistant.txt")}
 
@@ -75,13 +71,6 @@ if "messages" not in st.session_state:
 if st.button("New chat"):
     st.session_state.messages = [INITIAL_SYSTEM_MESSAGE, INITIAL_ASSISTANT_MESSAGE]
     st.rerun()
-
-# Hiển thị nội dung gởi tới OpenAI (debug)
-if st.checkbox("🛠 Hiển thị toàn bộ nội dung gửi đến OpenAI (debug)", value=False):
-    for idx, m in enumerate(st.session_state.messages):
-        role = m["role"]
-        content_preview = m["content"][:1000] + ("..." if len(m["content"]) > 1000 else "")
-        st.markdown(f"**{idx+1}. {role.upper()}**\n\n```\n{content_preview}\n```")
 
 # CSS cải tiến
 st.markdown("""<style>
@@ -180,10 +169,6 @@ if prompt := st.chat_input("Enter your question here..."):
     </div>
     ''', unsafe_allow_html=True)
 
-    # Thông báo trạng thái
-    st.info("🔍 Đang truy vấn OpenAI với nội dung đã bao gồm tài liệu PDF...")
-
-    # Assistant đang trả lời...
     typing_placeholder = st.empty()
     typing_placeholder.markdown('<div class="typing">Assistant is typing..</div>', unsafe_allow_html=True)
 
